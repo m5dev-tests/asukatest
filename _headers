@@ -17,5 +17,14 @@
   Content-Type: text/javascript; charset=utf-8
   Cache-Control: public, max-age=0, must-revalidate
 
+# Bundled BIOS ROMs and CD tracks never change; cache them hard so a repeat
+# visit boots without re-downloading ~225 MB.
+/assets/*
+  Cache-Control: public, max-age=31536000, immutable
+
+# The manifest drives auto-boot, so always revalidate it.
+/assets/manifest.json
+  Cache-Control: public, max-age=0, must-revalidate
+
 /
   Cache-Control: public, max-age=0, must-revalidate

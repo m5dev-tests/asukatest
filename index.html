@@ -138,6 +138,62 @@
   .overlay h2 { margin: 0; color: var(--ink); font-size: 16px; letter-spacing: .04em; }
   .overlay .hint { max-width: 46ch; }
 
+  /* ---- Arcade auto-boot loader ---- */
+  #loader {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    gap: 18px;
+    text-align: center;
+    padding: 24px;
+    background:
+      radial-gradient(900px 420px at 50% 12%, rgba(255, 93, 143, 0.14), transparent 62%),
+      rgba(4, 7, 14, 0.94);
+    z-index: 30;
+    transition: opacity .45s ease;
+  }
+  #loader.hidden { opacity: 0; pointer-events: none; }
+  #loader .marquee {
+    font-size: clamp(20px, 4.6vw, 34px);
+    font-weight: 700;
+    letter-spacing: .34em;
+    text-transform: uppercase;
+    color: var(--ink);
+    text-shadow: 0 0 12px rgba(255, 93, 143, 0.65), 0 0 30px rgba(56, 217, 200, 0.28);
+    animation: flicker 2.6s infinite;
+  }
+  #loader .marquee b { color: var(--accent); }
+  @keyframes flicker {
+    0%, 96%, 100% { opacity: 1; }
+    97% { opacity: .72; }
+    98% { opacity: .95; }
+  }
+  #loader .sub { color: var(--accent-2); font-size: 12px; letter-spacing: .22em; text-transform: uppercase; }
+  #loader .bar {
+    width: min(460px, 82%);
+    height: 14px;
+    border: 1px solid var(--edge);
+    border-radius: 999px;
+    background: #05080f;
+    overflow: hidden;
+    box-shadow: inset 0 0 12px rgba(0, 0, 0, 0.7);
+  }
+  #loader .bar > i {
+    display: block;
+    height: 100%;
+    width: 0%;
+    border-radius: 999px;
+    background: linear-gradient(90deg, var(--accent-2), var(--accent));
+    transition: width .18s ease;
+  }
+  #loader .pct { color: var(--muted); font-size: 12px; letter-spacing: .1em; }
+  #loader .status { color: var(--muted); font-size: 11px; min-height: 1.2em; max-width: 52ch; }
+  #loader .status.err { color: var(--accent); }
+  #loader .tip { color: var(--muted); font-size: 10px; letter-spacing: .16em; text-transform: uppercase; opacity: .8; }
+
   .dropzone {
     border: 2px dashed var(--edge);
     border-radius: 12px;
@@ -280,7 +336,16 @@
   <section class="stage">
     <canvas id="canvas" width="640" height="480" tabindex="0"></canvas>
 
-    <div class="overlay" id="overlay">
+    <div id="loader">
+      <div class="marquee">Asu<b>k</b>a</div>
+      <div class="sub" id="loader-sub">Loading FM Towns BIOS &amp; disc…</div>
+      <div class="bar"><i id="loader-bar"></i></div>
+      <div class="pct" id="loader-pct">0%</div>
+      <div class="status" id="loader-status">Preparing…</div>
+      <div class="tip" id="loader-tip">Insert coin — booting automatically</div>
+    </div>
+
+    <div class="overlay hidden" id="overlay">
       <h2 id="overlay-title">Drop your FM Towns files</h2>
       <div class="dropzone" id="dropzone">
         <div class="hint" id="overlay-hint">
@@ -375,6 +440,7 @@ const KEY = {
 
 const BIOS_DIR = "/bios";
 const MEDIA_DIR = "/media";
+const ASSET_BASE = "./assets";
 
 const el = (id) => document.getElementById(id);
 const logEl = el("log");
@@ -596,14 +662,18 @@ async function mountStorage() {
 async function mountFiles() {
   const Module = state.Module;
   const FS = Module.FS;
-  // Start from a clean slate so a removed file really disappears.
-  for (const dir of [BIOS_DIR, MEDIA_DIR]) {
+  // Only clear a directory when the user actually supplied files for it, so a
+  // manual Boot never wipes the assets the auto-boot pipeline already loaded.
+  const buckets = [
+    [BIOS_DIR, state.biosFiles],
+    [MEDIA_DIR, state.mediaFiles],
+  ];
+  for (const [dir, map] of buckets) {
+    if (map.size === 0) continue;
     try { FS.readdir(dir).forEach((n) => { if (n !== "." && n !== "..") FS.unlink(`${dir}/${n}`); }); }
     catch (e) { /* directory may not exist yet */ }
+    for (const f of map.values()) await writeFile(dir, f);
   }
-
-  for (const f of state.biosFiles.values()) await writeFile(BIOS_DIR, f);
-  for (const f of state.mediaFiles.values()) await writeFile(MEDIA_DIR, f);
   await syncfs(false);
   log(`mounted ${state.biosFiles.size} BIOS file(s), ${state.mediaFiles.size} media file(s)`);
 }
@@ -657,6 +727,161 @@ function sendKey(name, pressed) {
   const code = KEY[name];
   if (code === undefined) return;
   ccall("asuka_web_key", null, ["number", "number"], [code, pressed ? 1 : 0]);
+}
+
+// ---------------------------------------------------------------------------
+// Auto-boot: fetch the bundled BIOS + disc assets described by assets/manifest.json,
+// write them to the Emscripten filesystem, then start the engine with no input.
+// If no manifest is present the shell falls back to the manual upload flow.
+// ---------------------------------------------------------------------------
+let autoManifest = null;
+
+function loaderSet(pct, status) {
+  if (typeof pct === "number" && isFinite(pct)) {
+    el("loader-bar").style.width = Math.max(0, Math.min(100, pct)).toFixed(1) + "%";
+    el("loader-pct").textContent = Math.round(pct) + "%";
+  }
+  if (status !== undefined) el("loader-status").textContent = status;
+}
+function loaderDone() {
+  const l = el("loader");
+  l.classList.add("hidden");
+  setTimeout(() => { l.style.display = "none"; }, 500);
+}
+function loaderFail(msg) {
+  log("auto-boot failed: " + msg, "err");
+  loaderSet(100, "Auto-boot unavailable — use the manual controls below. " + msg);
+  el("loader-status").classList.add("err");
+  el("loader-tip").textContent = "Manual boot available below";
+  // Reveal the manual drop zone so the player can still supply files by hand.
+  showOverlay("Auto-boot unavailable",
+    "The bundled assets could not be loaded. Drag in the FM Towns BIOS ROMs and " +
+    "a disc image, or use the pickers on the right, then press <b>Boot</b>.");
+}
+
+// The service worker reloads the page once on a first (header-less) visit; wait
+// briefly for isolation so the threaded build can start on the reloaded page.
+function waitForIsolation(timeoutMs) {
+  if (window.crossOriginIsolated) return Promise.resolve(true);
+  return new Promise((resolve) => {
+    const started = Date.now();
+    const tick = () => {
+      if (window.crossOriginIsolated) return resolve(true);
+      if (Date.now() - started >= timeoutMs) return resolve(false);
+      setTimeout(tick, 100);
+    };
+    tick();
+  });
+}
+
+// Fetch one asset with streamed progress so the bar advances smoothly even for
+// the large CD tracks.
+async function fetchToFS(url, dir, name, onBytes) {
+  const res = await fetch(url, { cache: "force-cache" });
+  if (!res.ok) throw new Error(`${res.status} ${res.statusText} for ${url}`);
+  const total = Number(res.headers.get("content-length")) || 0;
+  const reader = res.body && res.body.getReader ? res.body.getReader() : null;
+  let buf;
+  if (reader) {
+    const chunks = [];
+    let received = 0;
+    for (;;) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      chunks.push(value);
+      received += value.length;
+      if (onBytes) onBytes(value.length, total);
+    }
+    buf = new Uint8Array(received);
+    let off = 0;
+    for (const c of chunks) { buf.set(c, off); off += c.length; }
+  } else {
+    buf = new Uint8Array(await res.arrayBuffer());
+    if (onBytes) onBytes(buf.length, total || buf.length);
+  }
+  ensureDir(dir);
+  state.Module.FS.writeFile(`${dir}/${name}`, buf);
+  return buf.length;
+}
+
+async function autoBoot() {
+  loaderSet(2, "Booting the Asuka web shell…");
+  try {
+    // Load the asset manifest; without one there is nothing to auto-boot.
+    let manifest = null;
+    try {
+      const r = await fetch(`${ASSET_BASE}/manifest.json`, { cache: "no-store" });
+      if (r.ok) manifest = await r.json();
+    } catch (e) { /* no manifest — manual mode */ }
+    if (!manifest || !manifest.cue || !Array.isArray(manifest.bios) || !manifest.bios.length) {
+      loaderDone();
+      showOverlay("Drop your FM Towns files",
+        "No bundled assets were found. Drag &amp; drop the <b>BIOS ROMs</b> and a " +
+        "game disc, or use the buttons on the right, then press <b>Boot</b>.");
+      return false;
+    }
+    autoManifest = manifest;
+
+    // On a first header-less visit the service worker reloads the page to gain
+    // isolation; wait for it so the threaded build can run.
+    await waitForIsolation(6000);
+    await loadModule();
+    if (manifest.title) {
+      el("loader-sub").textContent = "Loading FM Towns BIOS & " + manifest.title + "…";
+    }
+    loaderSet(8, "Runtime ready — fetching BIOS & disc image…");
+
+    // Total bytes for a byte-accurate progress bar (fall back to the manifest).
+    let totalBytes = 0;
+    const all = [...manifest.bios, ...manifest.media];
+    try {
+      const head = await Promise.all(all.map(async (e) =>
+        Number((await fetch(`${ASSET_BASE}/${e.url}`, { method: "HEAD" }))
+          .headers.get("content-length")) || 0));
+      totalBytes = head.reduce((a, b) => a + b, 0);
+    } catch (e) { totalBytes = 0; }
+    if (!totalBytes) totalBytes = manifest.totalBytes || all.reduce((a, e) => a + (e.size || 0), 0);
+
+    let loaded = 0;
+    const bump = (n) => {
+      loaded += n;
+      const pct = totalBytes ? 8 + 88 * (loaded / totalBytes) : 50;
+      loaderSet(pct, `Loading ${(loaded / 1048576).toFixed(1)} / ${(totalBytes / 1048576).toFixed(1)} MB`);
+    };
+
+    for (const e of manifest.bios) {
+      loaderSet(undefined, `BIOS: ${e.name}`);
+      await fetchToFS(`${ASSET_BASE}/${e.url}`, BIOS_DIR, e.name, bump);
+    }
+    for (const e of manifest.media) {
+      loaderSet(undefined, `Disc: ${e.label || e.name}`);
+      await fetchToFS(`${ASSET_BASE}/${e.url}`, MEDIA_DIR, e.name, bump);
+    }
+    log(`auto-loaded ${manifest.bios.length} BIOS file(s), ${manifest.media.length} media file(s)`);
+
+    loaderSet(97, "Warming up the FM Towns…");
+    const mediaPath = `${MEDIA_DIR}/${manifest.cue}`;
+    log(`auto-boot init(bios=${BIOS_DIR}, media=${mediaPath})`);
+    const ok = ccall("asuka_web_init", "number", ["string", "string"], [BIOS_DIR, mediaPath]);
+    if (!ok) {
+      const err = state.Module.UTF8ToString(ccall("asuka_web_last_error", "number", [], []));
+      throw new Error(err || "engine init failed");
+    }
+    ccall("asuka_web_start", null, ["number"], [0]);
+    state.running = true;
+
+    // Show touch controls and drop the loader so play starts immediately.
+    el("touchpad").classList.add("show");
+    el("btn-reset").disabled = false;
+    loaderSet(100, "Running — have fun!");
+    loaderDone();
+    el("canvas").focus();
+    log("running (auto-boot)", "ok");
+    return true;
+  } catch (e) {
+    loaderFail(e && e.message ? e.message : String(e));
+    return false;
+  }
 }
 
 // ---------------------------------------------------------------------------
@@ -769,8 +994,8 @@ window.addEventListener("DOMContentLoaded", () => {
     log("warning: not cross-origin isolated — the threaded build will not run. " +
         "Serve with COOP/COEP (scripts/serve_web.py or the Cloudflare _headers).", "err");
   }
-  // Preload the runtime so the first Boot is quick.
-  loadModule().catch((e) => log("preload failed: " + e.message, "err"));
+  // Turnkey: load the bundled BIOS + After Burner and boot with no user input.
+  autoBoot();
 });
 </script>
 </body>
