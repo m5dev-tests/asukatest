@@ -831,16 +831,19 @@ async function autoBoot() {
     }
     loaderSet(8, "Runtime ready — fetching BIOS & disc image…");
 
-    // Total bytes for a byte-accurate progress bar (fall back to the manifest).
-    let totalBytes = 0;
+    // Prefer the manifest's exact byte sizes for the progress denominator: some
+    // hosts report a compressed content-length on HEAD that does not match the
+    // decoded body we stream, which would overshoot the total.
     const all = [...manifest.bios, ...manifest.media];
-    try {
-      const head = await Promise.all(all.map(async (e) =>
-        Number((await fetch(`${ASSET_BASE}/${e.url}`, { method: "HEAD" }))
-          .headers.get("content-length")) || 0));
-      totalBytes = head.reduce((a, b) => a + b, 0);
-    } catch (e) { totalBytes = 0; }
-    if (!totalBytes) totalBytes = manifest.totalBytes || all.reduce((a, e) => a + (e.size || 0), 0);
+    let totalBytes = manifest.totalBytes || all.reduce((a, e) => a + (e.size || 0), 0);
+    if (!totalBytes) {
+      try {
+        const head = await Promise.all(all.map(async (e) =>
+          Number((await fetch(`${ASSET_BASE}/${e.url}`, { method: "HEAD" }))
+            .headers.get("content-length")) || 0));
+        totalBytes = head.reduce((a, b) => a + b, 0);
+      } catch (e) { totalBytes = 0; }
+    }
 
     let loaded = 0;
     const bump = (n) => {
