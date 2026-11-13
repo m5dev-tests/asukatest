@@ -1,8 +1,10 @@
 # Asuka Web Player
 
 The standalone web build of **Asuka** — a retro vintage PC runner — compiled to
-WebAssembly and running entirely in the browser. The first supported core is the
-**FM Towns** (Geartowns) emulation plugin.
+WebAssembly and running entirely in the browser. Two cores are built in: **FM
+Towns** (Geartowns) and **NEC PC-98** (NP2kai). This deployment boots the FM
+Towns demo; the PC-98 core is selected at runtime with `?machine=pc98` or a
+`machine` field in the manifest.
 
 **This deployment is turnkey.** Open the page and it boots by itself: the FM
 Towns BIOS and *The New Zealand Story* (Ving, 1989) are bundled with the site, so
@@ -13,7 +15,9 @@ enabled.
 The interface is deliberately minimal — a black letterboxed 4:3 canvas with a
 translucent on-screen pad. There are no upload panels, file lists, or debug
 cards: if the bundled assets ever fail to load, the loader simply shows an error
-and a **Retry** button.
+and a **Retry** button. A floating **🎮 ⇄ ⌨️** button swaps the on-screen pad for
+a virtual PC-98 keyboard (standard rows plus `HELP`, `STOP`, `ROLL UP/DOWN` and
+`F1`-`F5`); it appears on touch devices and whenever the PC-98 core is running.
 
 This repository is a deploy-only mirror of the `web/dist` bundle produced by
 `scripts/build_web.sh` in the main [Asuka](https://github.com/M5Devs/Asuka)
@@ -62,6 +66,7 @@ Disc: *The New Zealand Story (1989)(Ving)(Jp-En)* — a single-track
 ```jsonc
 {
   "title": "The New Zealand Story",
+  "machine": "fmtowns",                                     // optional: "fmtowns" (default) or "pc98"
   "cue": "New Zealand Story, The (1989)(Ving)(Jp-En).iso",  // file in /media to boot
   "totalBytes": 7266336,                                    // progress-bar fallback
   "bios":  [{ "name": "FMT_SYS.ROM", "url": "bios/FMT_SYS.ROM", "size": 262144 }],
@@ -97,12 +102,16 @@ Cross-Origin-Embedder-Policy: require-corp
 ## Controls
 
 Keyboard: arrows = d-pad, Enter = Start, Space = A, Z = B, X/Y = extra fire
-buttons, R = reset, F11 = fullscreen.
+buttons, R = reset, F11 = fullscreen. With the PC-98 core, typing is sent to the
+emulated PC-98 keyboard (its scan codes differ from PC/AT).
 
 On touch devices a translucent pad is shown automatically: a d-pad bottom-left,
-A/B buttons bottom-right, and START at the top centre. The pad buttons drive the
-engine directly through its C API (`asuka_web_key`) — no synthetic DOM key
-events — and `touch-action: none` keeps the browser from stealing presses.
+A/B buttons bottom-right, and START at the top centre. The floating **🎮 ⇄ ⌨️**
+button switches to a compact virtual PC-98 keyboard. The pad buttons drive the
+engine through `asuka_web_key`; the keyboard buttons use `asuka_web_scancode`,
+which injects the raw PC-98 scan code so the utility keys work. No synthetic DOM
+key events are used, and `touch-action: none` keeps the browser from stealing
+presses.
 
 The canvas keeps focus so physical key presses reach the SDL2 keyboard listener.
 A connected gamepad is detected too.
