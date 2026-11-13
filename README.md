@@ -6,8 +6,13 @@ WebAssembly and running entirely in the browser. The first supported core is the
 
 **This deployment is turnkey.** Open the page and it boots by itself: the FM
 Towns BIOS and *After Burner* (Sega, 1987) are bundled with the site, so there is
-nothing to upload. A loading bar tracks the ~225 MB asset download, then the game
-starts running with the on-screen touch pad already enabled.
+nothing to upload. A minimal loading bar tracks the ~225 MB asset download, then
+the game starts running with the on-screen touch pad already enabled.
+
+The interface is deliberately minimal — a black letterboxed 4:3 canvas with a
+translucent on-screen pad. There are no upload panels, file lists, or debug
+cards: if the bundled assets ever fail to load, the loader simply shows an error
+and a **Retry** button.
 
 This repository is a deploy-only mirror of the `web/dist` bundle produced by
 `scripts/build_web.sh` in the main [Asuka](https://github.com/M5Devs/Asuka)
@@ -18,7 +23,7 @@ the static site served to players.
 
 | Path | Purpose |
 | --- | --- |
-| `index.html` | The player shell: auto-boot loader, drag & drop fallback, disc selector, on-screen touch pad, fullscreen. |
+| `index.html` | The player shell: minimal auto-boot loader, letterboxed canvas, on-screen touch pad. |
 | `asuka_web.js` | Emscripten JavaScript glue that loads and drives the WASM module. |
 | `asuka_web.wasm` | The emulation core and the Asuka runtime, compiled to WebAssembly. |
 | `coi-serviceworker.min.js` | Adds the COOP/COEP headers in-browser so static hosts (e.g. GitHub Pages) get `SharedArrayBuffer`. |
@@ -35,10 +40,8 @@ the static site served to players.
    `/media` inside the Emscripten filesystem, showing progress.
 3. It initialises the engine with `media = /media/<cue>` and starts it.
 
-If `assets/manifest.json` is missing or the assets cannot be fetched, the shell
-falls back to the manual flow: drag the BIOS ROMs and a disc image onto the page
-(or use the pickers), pick the disc, and press **Boot**. Uploaded files are kept
-in the browser's IndexedDB and never leave the machine.
+If `assets/manifest.json` is missing or the assets cannot be fetched, the loader
+shows the error and a **Retry** button; there is no manual upload path.
 
 ### Bundled assets
 
@@ -95,8 +98,15 @@ Cross-Origin-Embedder-Policy: require-corp
 
 ## Controls
 
-Keyboard: arrows = d-pad, Enter = Start, Space/Z/X/C = fire, R = reset,
-F11 = fullscreen. On touch devices the on-screen gamepad is shown automatically.
+Keyboard: arrows = d-pad, Enter = Start, Space = A, Z = B, X/Y = extra fire
+buttons, R = reset, F11 = fullscreen.
+
+On touch devices a translucent pad is shown automatically: a d-pad bottom-left,
+A/B buttons bottom-right, and START at the top centre. The pad buttons drive the
+engine directly through its C API (`asuka_web_key`) — no synthetic DOM key
+events — and `touch-action: none` keeps the browser from stealing presses.
+
+The canvas keeps focus so physical key presses reach the SDL2 keyboard listener.
 A connected gamepad is detected too.
 
 ## Legal
