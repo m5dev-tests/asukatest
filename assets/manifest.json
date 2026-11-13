@@ -1,5 +1,5 @@
 {
-  "title": "After Burner",
+  "title": "The New Zealand Story",
   "bios": [
     {
       "name": "FMT_DIC.ROM",
@@ -54,60 +54,11 @@
   ],
   "media": [
     {
-      "name": "Afterburner (1987)(Sega)(Jp-En) (Track 01).bin",
-      "url": "media/Afterburner%20(1987)(Sega)(Jp-En)%20(Track%2001).bin",
-      "size": 7126560,
-      "label": "(Track 01)"
-    },
-    {
-      "name": "Afterburner (1987)(Sega)(Jp-En) (Track 02).bin",
-      "url": "media/Afterburner%20(1987)(Sega)(Jp-En)%20(Track%2002).bin",
-      "size": 16061808,
-      "label": "(Track 02)"
-    },
-    {
-      "name": "Afterburner (1987)(Sega)(Jp-En) (Track 03).bin",
-      "url": "media/Afterburner%20(1987)(Sega)(Jp-En)%20(Track%2003).bin",
-      "size": 36136128,
-      "label": "(Track 03)"
-    },
-    {
-      "name": "Afterburner (1987)(Sega)(Jp-En) (Track 04).bin",
-      "url": "media/Afterburner%20(1987)(Sega)(Jp-En)%20(Track%2004).bin",
-      "size": 58696512,
-      "label": "(Track 04)"
-    },
-    {
-      "name": "Afterburner (1987)(Sega)(Jp-En) (Track 05).bin",
-      "url": "media/Afterburner%20(1987)(Sega)(Jp-En)%20(Track%2005).bin",
-      "size": 20107248,
-      "label": "(Track 05)"
-    },
-    {
-      "name": "Afterburner (1987)(Sega)(Jp-En) (Track 06).bin",
-      "url": "media/Afterburner%20(1987)(Sega)(Jp-En)%20(Track%2006).bin",
-      "size": 52546032,
-      "label": "(Track 06)"
-    },
-    {
-      "name": "Afterburner (1987)(Sega)(Jp-En) (Track 07).bin",
-      "url": "media/Afterburner%20(1987)(Sega)(Jp-En)%20(Track%2007).bin",
-      "size": 35207088,
-      "label": "(Track 07)"
-    },
-    {
-      "name": "Afterburner (1987)(Sega)(Jp-En) (Track 08).bin",
-      "url": "media/Afterburner%20(1987)(Sega)(Jp-En)%20(Track%2008).bin",
-      "size": 4673424,
-      "label": "(Track 08)"
-    },
-    {
-      "name": "Afterburner (1987)(Sega)(Jp-En).cue",
-      "url": "media/Afterburner%20(1987)(Sega)(Jp-En).cue",
-      "size": 825,
-      "label": "Afterburner (1987)(Sega)(Jp-En).cue"
+      "name": "New Zealand Story, The (1989)(Ving)(Jp-En).iso",
+      "url": "media/New%20Zealand%20Story%2C%20The%20%281989%29%28Ving%29%28Jp-En%29.iso",
+      "size": 3072000
     }
   ],
-  "cue": "Afterburner (1987)(Sega)(Jp-En).cue",
-  "totalBytes": 234749961
+  "cue": "New Zealand Story, The (1989)(Ving)(Jp-En).iso",
+  "totalBytes": 7266336
 }

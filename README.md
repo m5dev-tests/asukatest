@@ -5,9 +5,10 @@ WebAssembly and running entirely in the browser. The first supported core is the
 **FM Towns** (Geartowns) emulation plugin.
 
 **This deployment is turnkey.** Open the page and it boots by itself: the FM
-Towns BIOS and *After Burner* (Sega, 1987) are bundled with the site, so there is
-nothing to upload. A minimal loading bar tracks the ~225 MB asset download, then
-the game starts running with the on-screen touch pad already enabled.
+Towns BIOS and *The New Zealand Story* (Ving, 1989) are bundled with the site, so
+there is nothing to upload. A minimal loading bar tracks the ~7 MB asset
+download, then the game starts running with the on-screen touch pad already
+enabled.
 
 The interface is deliberately minimal — a black letterboxed 4:3 canvas with a
 translucent on-screen pad. There are no upload panels, file lists, or debug
@@ -31,7 +32,7 @@ the static site served to players.
 | `.nojekyll` | Tells GitHub Pages to serve the files as-is (no Jekyll processing). |
 | `assets/manifest.json` | Declares the bundled BIOS ROMs and disc tracks; the shell reads it to auto-boot. |
 | `assets/bios/` | FM Towns firmware ROMs. |
-| `assets/media/` | *After Burner* CD image, split into one BIN per track plus its CUE sheet. |
+| `assets/media/` | *The New Zealand Story* CD image (a single 3 MB ISO). |
 
 ## How auto-boot works
 
@@ -53,21 +54,18 @@ FMT_SYS.ROM  FMT_DOS.ROM  FMT_FNT.ROM  FMT_DIC.ROM  FMT_F20.ROM
 MYTOWNS.ROM  MAR_EX0.ROM  MAR_EX1.ROM  MAR_EX2.ROM  MAR_EX3.ROM
 ```
 
-Disc: *Afterburner (1987)(Sega)(Jp-En)* — track 1 is `MODE1/2352` data; tracks
-2–8 are audio. The original single 230 MB BIN exceeds GitHub's 100 MB file limit,
-so it is stored as one BIN per track and described by a multi-`FILE` CUE sheet.
-The track LBAs (and therefore the disc TOC) are byte-for-byte identical to the
-original image.
+Disc: *The New Zealand Story (1989)(Ving)(Jp-En)* — a single-track
+`MODE1/2048` ISO, so it is a lone 3 MB file with no CUE sheet and no splitting.
 
 ### Manifest schema
 
 ```jsonc
 {
-  "title": "After Burner",
-  "cue": "Afterburner (1987)(Sega)(Jp-En).cue",   // file in /media to boot
-  "totalBytes": 234749961,                         // progress-bar fallback
+  "title": "The New Zealand Story",
+  "cue": "New Zealand Story, The (1989)(Ving)(Jp-En).iso",  // file in /media to boot
+  "totalBytes": 7266336,                                    // progress-bar fallback
   "bios":  [{ "name": "FMT_SYS.ROM", "url": "bios/FMT_SYS.ROM", "size": 262144 }],
-  "media": [{ "name": "…(Track 01).bin", "url": "media/…", "size": 7126560, "label": "(Track 01)" }]
+  "media": [{ "name": "New Zealand Story, The (1989)(Ving)(Jp-En).iso", "url": "media/New%20Zealand%20Story%2C%20The%20%281989%29%28Ving%29%28Jp-En%29.iso", "size": 3072000 }]
 }
 ```
 
@@ -112,7 +110,7 @@ A connected gamepad is detected too.
 ## Legal
 
 Asuka is released under the GNU General Public License v3.0 (see `LICENSE`).
-The bundled FM Towns BIOS ROMs and *After Burner* disc image remain the property
-of their respective rights holders and are included only so this demo can boot
-without a manual upload. Remove them and use the manual flow if you do not have
-the right to distribute them.
+The bundled FM Towns BIOS ROMs and *The New Zealand Story* disc image remain the
+property of their respective rights holders and are included only so this demo
+can boot without a manual upload. Remove them and use the manual flow if you do
+not have the right to distribute them.
