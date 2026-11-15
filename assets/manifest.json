@@ -1,64 +1,100 @@
 {
   "title": "The New Zealand Story",
-  "bios": [
+  "demos": [
     {
-      "name": "FMT_DIC.ROM",
-      "url": "bios/FMT_DIC.ROM",
-      "size": 524288
+      "id": "nzs",
+      "title": "The New Zealand Story",
+      "machine": "fmtowns",
+      "featured": true,
+      "glyph": "\ud83d\udc24",
+      "bios": [
+        {
+          "name": "FMT_DIC.ROM",
+          "url": "bios/FMT_DIC.ROM",
+          "size": 524288
+        },
+        {
+          "name": "FMT_DOS.ROM",
+          "url": "bios/FMT_DOS.ROM",
+          "size": 524288
+        },
+        {
+          "name": "FMT_F20.ROM",
+          "url": "bios/FMT_F20.ROM",
+          "size": 524288
+        },
+        {
+          "name": "FMT_FNT.ROM",
+          "url": "bios/FMT_FNT.ROM",
+          "size": 262144
+        },
+        {
+          "name": "FMT_SYS.ROM",
+          "url": "bios/FMT_SYS.ROM",
+          "size": 262144
+        },
+        {
+          "name": "MAR_EX0.ROM",
+          "url": "bios/MAR_EX0.ROM",
+          "size": 524288
+        },
+        {
+          "name": "MAR_EX1.ROM",
+          "url": "bios/MAR_EX1.ROM",
+          "size": 524288
+        },
+        {
+          "name": "MAR_EX2.ROM",
+          "url": "bios/MAR_EX2.ROM",
+          "size": 524288
+        },
+        {
+          "name": "MAR_EX3.ROM",
+          "url": "bios/MAR_EX3.ROM",
+          "size": 524288
+        },
+        {
+          "name": "MYTOWNS.ROM",
+          "url": "bios/MYTOWNS.ROM",
+          "size": 32
+        }
+      ],
+      "media": [
+        {
+          "name": "New Zealand Story, The (1989)(Ving)(Jp-En).iso",
+          "url": "media/New%20Zealand%20Story%2C%20The%20%281989%29%28Ving%29%28Jp-En%29.iso",
+          "size": 3072000
+        }
+      ],
+      "cue": "New Zealand Story, The (1989)(Ving)(Jp-En).iso",
+      "totalBytes": 7266336
     },
     {
-      "name": "FMT_DOS.ROM",
-      "url": "bios/FMT_DOS.ROM",
-      "size": 524288
-    },
-    {
-      "name": "FMT_F20.ROM",
-      "url": "bios/FMT_F20.ROM",
-      "size": 524288
-    },
-    {
-      "name": "FMT_FNT.ROM",
-      "url": "bios/FMT_FNT.ROM",
-      "size": 262144
-    },
-    {
-      "name": "FMT_SYS.ROM",
-      "url": "bios/FMT_SYS.ROM",
-      "size": 262144
-    },
-    {
-      "name": "MAR_EX0.ROM",
-      "url": "bios/MAR_EX0.ROM",
-      "size": 524288
-    },
-    {
-      "name": "MAR_EX1.ROM",
-      "url": "bios/MAR_EX1.ROM",
-      "size": 524288
-    },
-    {
-      "name": "MAR_EX2.ROM",
-      "url": "bios/MAR_EX2.ROM",
-      "size": 524288
-    },
-    {
-      "name": "MAR_EX3.ROM",
-      "url": "bios/MAR_EX3.ROM",
-      "size": 524288
-    },
-    {
-      "name": "MYTOWNS.ROM",
-      "url": "bios/MYTOWNS.ROM",
-      "size": 32
+      "id": "battlecity",
+      "title": "Battle City",
+      "machine": "x68k",
+      "glyph": "\ud83d\udda5",
+      "bios": [
+        {
+          "name": "iplrom.dat",
+          "url": "x68k/IPLROM.DAT",
+          "size": 131072
+        },
+        {
+          "name": "cgrom.dat",
+          "url": "x68k/CGROM.DAT",
+          "size": 786432
+        }
+      ],
+      "media": [
+        {
+          "name": "Battle City (19xx)(-)[p].dim",
+          "url": "x68k/Battle%20City%20%2819xx%29%28-%29%5Bp%5D.dim",
+          "size": 1261824
+        }
+      ],
+      "cue": "Battle City (19xx)(-)[p].dim",
+      "totalBytes": 2179328
     }
-  ],
-  "media": [
-    {
-      "name": "New Zealand Story, The (1989)(Ving)(Jp-En).iso",
-      "url": "media/New%20Zealand%20Story%2C%20The%20%281989%29%28Ving%29%28Jp-En%29.iso",
-      "size": 3072000
-    }
-  ],
-  "cue": "New Zealand Story, The (1989)(Ving)(Jp-En).iso",
-  "totalBytes": 7266336
+  ]
 }
