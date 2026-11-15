@@ -70,10 +70,10 @@
       "totalBytes": 7266336
     },
     {
-      "id": "battlecity",
-      "title": "Battle City",
+      "id": "chorrensha",
+      "title": "Cho Ren Sha 68K",
       "machine": "x68k",
-      "glyph": "\ud83d\udda5",
+      "glyph": "\ud83d\ude80",
       "bios": [
         {
           "name": "iplrom.dat",
@@ -88,12 +88,12 @@
       ],
       "media": [
         {
-          "name": "Battle City (19xx)(-)[p].dim",
-          "url": "x68k/Battle%20City%20%2819xx%29%28-%29%5Bp%5D.dim",
+          "name": "Chourensha 68K v1.01 (1995)(Famibe No Yosshin).dim",
+          "url": "x68k/Chourensha%2068K%20v1.01%20%281995%29%28Famibe%20No%20Yosshin%29.dim",
           "size": 1261824
         }
       ],
-      "cue": "Battle City (19xx)(-)[p].dim",
+      "cue": "Chourensha 68K v1.01 (1995)(Famibe No Yosshin).dim",
       "totalBytes": 2179328
     }
   ]
